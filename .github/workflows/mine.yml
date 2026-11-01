@@ -1,0 +1,24 @@
+name: chip404-miner
+on: [workflow_dispatch]
+jobs:
+  mine:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install safe-pysha3
+      - run: python miner.py
+        env:
+          START: ${{ fromJson('["0","2000000000","4000000000","6000000000","8000000000","10000000000","12000000000","14000000000","16000000000","18000000000"]')[matrix.job] }}
+          END: ${{ fromJson('["2000000000","4000000000","6000000000","8000000000","10000000000","12000000000","14000000000","16000000000","18000000000","20000000000"]')[matrix.job] }}
+          NEED: '40'
+      - name: upload nonce
+        if: hashFiles('nonce.txt') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: nonce-${{ matrix.job }}
+          path: nonce.txt
